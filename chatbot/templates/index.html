@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Chatbot - Your Intelligent Assistant</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Header -->
+        <header class="chat-header">
+            <div class="header-content">
+                <div class="bot-info">
+                    <div class="bot-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="bot-details">
+                        <h1>AI Assistant</h1>
+                        <span class="status" id="bot-status">Online</span>
+                    </div>
+                </div>
+                <div class="header-actions">
+                    <button class="action-btn" id="clear-chat" title="Clear Chat">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    <button class="action-btn" id="settings-btn" title="Settings">
+                        <i class="fas fa-cog"></i>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Chat Container -->
+    <div class="chat-container">
+            <div class="chat-messages" id="chat-messages">
+                <div class="welcome-message">
+                    <div class="bot-avatar-small">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="welcome-content">
+                        <h3>Welcome to College Information Center! 🎓</h3>
+                        <p>I'm your college information assistant. I can help you explore universities, compare programs, and find the perfect college for you! I have detailed information about 15 top universities.</p>
+                        <div class="suggestion-chips">
+                            <span class="chip">Tell me about Harvard</span>
+                            <span class="chip">What programs does MIT offer?</span>
+                            <span class="chip">Compare Harvard and Stanford</span>
+                            <span class="chip">Show me colleges</span>
+                        </div>
+                        <div class="college-highlights">
+                            <h4>🏛️ Featured Colleges (Top 15):</h4>
+                            <div class="college-grid">
+                                <div class="college-card">Harvard</div>
+                                <div class="college-card">MIT</div>
+                                <div class="college-card">Stanford</div>
+                                <div class="college-card">Berkeley</div>
+                                <div class="college-card">Yale</div>
+                                <div class="college-card">Princeton</div>
+                                <div class="college-card">Caltech</div>
+                                <div class="college-card">Columbia</div>
+                                <div class="college-card">UPenn</div>
+                                <div class="college-card">Duke</div>
+                                <div class="college-card">Northwestern</div>
+                                <div class="college-card">Johns Hopkins</div>
+                                <div class="college-card">Cornell</div>
+                                <div class="college-card">Rice</div>
+                                <div class="college-card">Vanderbilt</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Typing Indicator -->
+            <div class="typing-indicator" id="typing-indicator">
+                <div class="typing-dots">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
+                <span class="typing-text">AI is typing...</span>
+            </div>
+
+            <!-- Input Area -->
+            <div class="input-container">
+                <form id="chat-form" class="chat-form">
+                    <div class="input-wrapper">
+                        <input type="text" id="user-input" placeholder="Type your message here..." autocomplete="off" required>
+                        <button type="submit" class="send-btn" id="send-btn">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </form>
+                <div class="input-footer">
+                    <small>Press Enter to send • Shift+Enter for new line</small>
+                </div>
+            </div>
+        </div>
+
+        <!-- Settings Modal -->
+        <div class="modal" id="settings-modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Settings</h2>
+                    <button class="close-btn" id="close-settings">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="setting-group">
+                        <label for="theme-select">Theme:</label>
+                        <select id="theme-select">
+                            <option value="light">Light</option>
+                            <option value="dark">Dark</option>
+                            <option value="auto">Auto</option>
+                        </select>
+                    </div>
+                    <div class="setting-group">
+                        <label for="font-size">Font Size:</label>
+                        <input type="range" id="font-size" min="12" max="18" value="14">
+                        <span id="font-size-value">14px</span>
+                    </div>
+                    <div class="setting-group">
+                        <label>
+                            <input type="checkbox" id="sound-enabled" checked>
+                            Enable notification sounds
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ChatBot {
+            constructor() {
+                this.chatMessages = document.getElementById('chat-messages');
+                this.userInput = document.getElementById('user-input');
+                this.chatForm = document.getElementById('chat-form');
+                this.typingIndicator = document.getElementById('typing-indicator');
+                this.sendBtn = document.getElementById('send-btn');
+                this.clearBtn = document.getElementById('clear-chat');
+                this.settingsBtn = document.getElementById('settings-btn');
+                this.settingsModal = document.getElementById('settings-modal');
+                this.closeSettings = document.getElementById('close-settings');
+                this.botStatus = document.getElementById('bot-status');
+                
+                this.conversationId = null;
+                this.isTyping = false;
+                
+                this.init();
+            }
+
+            init() {
+                this.setupEventListeners();
+                this.loadSettings();
+                this.loadConversation();
+            }
+
+            setupEventListeners() {
+                this.chatForm.addEventListener('submit', (e) => this.handleSubmit(e));
+                this.userInput.addEventListener('keydown', (e) => this.handleKeyDown(e));
+                this.clearBtn.addEventListener('click', () => this.clearChat());
+                this.settingsBtn.addEventListener('click', () => this.openSettings());
+                this.closeSettings.addEventListener('click', () => this.closeSettingsModal());
+                
+                // Settings
+                document.getElementById('theme-select').addEventListener('change', (e) => this.changeTheme(e.target.value));
+                document.getElementById('font-size').addEventListener('input', (e) => this.changeFontSize(e.target.value));
+                document.getElementById('sound-enabled').addEventListener('change', (e) => this.toggleSound(e.target.checked));
+                
+                // Close modal when clicking outside
+                this.settingsModal.addEventListener('click', (e) => {
+                    if (e.target === this.settingsModal) {
+                        this.closeSettingsModal();
+                    }
+                });
+            }
+
+            async handleSubmit(e) {
+            e.preventDefault();
+                const message = this.userInput.value.trim();
+                if (!message || this.isTyping) return;
+
+                this.addMessage('user', message);
+                this.userInput.value = '';
+                this.showTyping();
+
+                try {
+            const response = await fetch('/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message })
+                    });
+
+                    const data = await response.json();
+                    
+                    if (data.error) {
+                        throw new Error(data.error);
+                    }
+
+                    this.conversationId = data.conversation_id;
+                    this.hideTyping();
+                    this.addMessage('bot', data.response);
+                    this.playNotificationSound();
+                    
+                } catch (error) {
+                    this.hideTyping();
+                    this.addMessage('bot', 'Sorry, I encountered an error. Please try again.');
+                    console.error('Chat error:', error);
+                }
+            }
+
+            handleKeyDown(e) {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault();
+                    this.chatForm.dispatchEvent(new Event('submit'));
+                }
+            }
+
+            addMessage(role, content) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${role}-message`;
+                
+                const timestamp = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+                
+                messageDiv.innerHTML = `
+                    <div class="message-content">
+                        <div class="message-text">${this.formatMessage(content)}</div>
+                        <div class="message-time">${timestamp}</div>
+                    </div>
+                    ${role === 'bot' ? '<div class="message-avatar"><i class="fas fa-robot"></i></div>' : ''}
+                `;
+                
+                this.chatMessages.appendChild(messageDiv);
+                this.scrollToBottom();
+            }
+
+            formatMessage(content) {
+                // Simple formatting for better readability
+                return content
+                    .replace(/\n/g, '<br>')
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    .replace(/\*(.*?)\*/g, '<em>$1</em>');
+            }
+
+            showTyping() {
+                this.isTyping = true;
+                this.typingIndicator.style.display = 'flex';
+                this.sendBtn.disabled = true;
+                this.scrollToBottom();
+            }
+
+            hideTyping() {
+                this.isTyping = false;
+                this.typingIndicator.style.display = 'none';
+                this.sendBtn.disabled = false;
+            }
+
+            scrollToBottom() {
+                setTimeout(() => {
+                    this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+                }, 100);
+            }
+
+            async clearChat() {
+                if (confirm('Are you sure you want to clear the chat history?')) {
+                    if (this.conversationId) {
+                        try {
+                            await fetch(`/conversation/${this.conversationId}`, { method: 'DELETE' });
+                        } catch (error) {
+                            console.error('Error clearing conversation:', error);
+                        }
+                    }
+                    
+                    this.chatMessages.innerHTML = `
+                        <div class="welcome-message">
+                            <div class="bot-avatar-small">
+                                <i class="fas fa-robot"></i>
+                            </div>
+                            <div class="welcome-content">
+                                <h3>Chat cleared! 🗑️</h3>
+                                <p>Ready for a fresh conversation. What would you like to talk about?</p>
+                            </div>
+                        </div>
+                    `;
+                    this.conversationId = null;
+                }
+            }
+
+            openSettings() {
+                this.settingsModal.style.display = 'flex';
+            }
+
+            closeSettingsModal() {
+                this.settingsModal.style.display = 'none';
+            }
+
+            changeTheme(theme) {
+                document.body.className = `theme-${theme}`;
+                localStorage.setItem('chatbot-theme', theme);
+            }
+
+            changeFontSize(size) {
+                document.documentElement.style.setProperty('--base-font-size', `${size}px`);
+                document.getElementById('font-size-value').textContent = `${size}px`;
+                localStorage.setItem('chatbot-font-size', size);
+            }
+
+            toggleSound(enabled) {
+                localStorage.setItem('chatbot-sound', enabled);
+            }
+
+            playNotificationSound() {
+                if (localStorage.getItem('chatbot-sound') === 'true') {
+                    // Simple notification sound using Web Audio API
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.setValueAtTime(800, audioContext.currentTime);
+                    oscillator.frequency.setValueAtTime(600, audioContext.currentTime + 0.1);
+                    
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.2);
+                }
+            }
+
+            loadSettings() {
+                const theme = localStorage.getItem('chatbot-theme') || 'light';
+                const fontSize = localStorage.getItem('chatbot-font-size') || '14';
+                const sound = localStorage.getItem('chatbot-sound') !== 'false';
+                
+                this.changeTheme(theme);
+                this.changeFontSize(fontSize);
+                document.getElementById('theme-select').value = theme;
+                document.getElementById('font-size').value = fontSize;
+                document.getElementById('font-size-value').textContent = `${fontSize}px`;
+                document.getElementById('sound-enabled').checked = sound;
+            }
+
+            async loadConversation() {
+                // Load conversation history if available
+                // This would be implemented based on your needs
+            }
+        }
+
+        // Initialize the chatbot when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new ChatBot();
+        });
+
+        // Add suggestion chip click handlers
+        document.addEventListener('click', (e) => {
+            if (e.target.classList.contains('chip')) {
+                document.getElementById('user-input').value = e.target.textContent;
+                document.getElementById('user-input').focus();
+            }
+            
+            // College card click handlers
+            if (e.target.classList.contains('college-card')) {
+                const collegeName = e.target.textContent;
+                document.getElementById('user-input').value = `Tell me about ${collegeName}`;
+                document.getElementById('user-input').focus();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>College Admin Interface</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #555;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        textarea {
+            height: 100px;
+            resize: vertical;
+        }
+        .form-row {
+            display: flex;
+            gap: 20px;
+        }
+        .form-row .form-group {
+            flex: 1;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-right: 10px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .btn-secondary {
+            background: #6c757d;
+        }
+        .btn-secondary:hover {
+            background: #545b62;
+        }
+        .college-list {
+            margin-top: 30px;
+        }
+        .college-item {
+            background: #f8f9fa;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #007bff;
+        }
+        .college-name {
+            font-weight: bold;
+            color: #007bff;
+            font-size: 18px;
+        }
+        .college-details {
+            color: #666;
+            margin-top: 5px;
+        }
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+        .stat-card {
+            background: #e9ecef;
+            padding: 20px;
+            border-radius: 5px;
+            text-align: center;
+        }
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007bff;
+        }
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+        .error {
+            color: #dc3545;
+            background: #f8d7da;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .success {
+            color: #155724;
+            background: #d4edda;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎓 College Administration Interface</h1>
+        
+        <!-- Statistics -->
+        <div class="stats" id="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="total-colleges">-</div>
+                <div class="stat-label">Total Colleges</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avg-acceptance">-</div>
+                <div class="stat-label">Avg Acceptance Rate</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="avg-tuition">-</div>
+                <div class="stat-label">Avg Tuition</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="top-ranking">-</div>
+                <div class="stat-label">Top Ranking</div>
+            </div>
+        </div>
+        
+        <!-- Add College Form -->
+        <div id="add-college-form">
+            <h2>Add New College</h2>
+            <form id="college-form">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="name">College Name *</label>
+                        <input type="text" id="name" name="name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="location">Location *</label>
+                        <input type="text" id="location" name="location" placeholder="City, State" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="type">Type *</label>
+                        <select id="type" name="type" required>
+                            <option value="">Select Type</option>
+                            <option value="Private Research University">Private Research University</option>
+                            <option value="Public Research University">Public Research University</option>
+                            <option value="Private Liberal Arts College">Private Liberal Arts College</option>
+                            <option value="Public Liberal Arts College">Public Liberal Arts College</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="founded">Founded Year *</label>
+                        <input type="number" id="founded" name="founded" min="1000" max="2024" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="ranking">Ranking *</label>
+                        <input type="number" id="ranking" name="ranking" min="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="acceptance_rate">Acceptance Rate (%) *</label>
+                        <input type="number" id="acceptance_rate" name="acceptance_rate" min="0" max="100" step="0.1" required>
+                    </div>
+                </div>
+                
+                <h3>Tuition Information</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="undergraduate_tuition">Undergraduate Tuition ($)</label>
+                        <input type="number" id="undergraduate_tuition" name="undergraduate_tuition" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="graduate_tuition">Graduate Tuition ($)</label>
+                        <input type="number" id="graduate_tuition" name="graduate_tuition" min="0">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="room_board">Room & Board ($)</label>
+                        <input type="number" id="room_board" name="room_board" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="website">Website</label>
+                        <input type="url" id="website" name="website" placeholder="https://www.university.edu">
+                    </div>
+                </div>
+                
+                <h3>Programs</h3>
+                <div class="form-group">
+                    <label for="undergraduate_programs">Undergraduate Programs (one per line)</label>
+                    <textarea id="undergraduate_programs" name="undergraduate_programs" placeholder="Computer Science&#10;Engineering&#10;Business"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="graduate_programs">Graduate Programs (one per line)</label>
+                    <textarea id="graduate_programs" name="graduate_programs" placeholder="MBA&#10;MS Computer Science&#10;PhD Engineering"></textarea>
+                </div>
+                
+                <h3>Admission Requirements</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="gpa">GPA Requirement</label>
+                        <input type="number" id="gpa" name="gpa" min="0" max="4" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="sat_score">SAT Score</label>
+                        <input type="number" id="sat_score" name="sat_score" min="400" max="1600">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="act_score">ACT Score</label>
+                        <input type="number" id="act_score" name="act_score" min="1" max="36">
+                    </div>
+                    <div class="form-group">
+                        <label for="deadline">Application Deadline</label>
+                        <input type="text" id="deadline" name="deadline" placeholder="January 1">
+                    </div>
+                </div>
+                
+                <h3>Campus Life</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="student_population">Total Student Population</label>
+                        <input type="number" id="student_population" name="student_population" min="0">
+                    </div>
+                    <div class="form-group">
+                        <label for="undergraduate_population">Undergraduate Population</label>
+                        <input type="number" id="undergraduate_population" name="undergraduate_population" min="0">
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="international_students">International Students (%)</label>
+                        <input type="number" id="international_students" name="international_students" min="0" max="100" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label for="student_faculty_ratio">Student-Faculty Ratio</label>
+                        <input type="number" id="student_faculty_ratio" name="student_faculty_ratio" min="1" step="0.1">
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="notable_features">Notable Features (one per line)</label>
+                    <textarea id="notable_features" name="notable_features" placeholder="Strong research programs&#10;Beautiful campus&#10;Diverse student body"></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="contact_phone">Contact Phone</label>
+                    <input type="tel" id="contact_phone" name="contact_phone" placeholder="(555) 123-4567">
+                </div>
+                
+                <div class="form-group">
+                    <label for="contact_email">Contact Email</label>
+                    <input type="email" id="contact_email" name="contact_email" placeholder="admissions@university.edu">
+                </div>
+                
+                <button type="submit" class="btn">Add College</button>
+                <button type="button" class="btn btn-secondary" onclick="clearForm()">Clear Form</button>
+            </form>
+        </div>
+        
+        <!-- College List -->
+        <div class="college-list">
+            <h2>Current Colleges</h2>
+            <div id="colleges-list">
+                <!-- Colleges will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Load statistics and colleges on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            loadStatistics();
+            loadColleges();
+        });
+
+        // Load statistics
+        async function loadStatistics() {
+            try {
+                const response = await fetch('/admin/statistics');
+                const stats = await response.json();
+                
+                document.getElementById('total-colleges').textContent = stats.total_colleges || 0;
+                document.getElementById('avg-acceptance').textContent = (stats.average_acceptance_rate || 0).toFixed(1) + '%';
+                document.getElementById('avg-tuition').textContent = '$' + (stats.average_tuition || 0).toLocaleString();
+                document.getElementById('top-ranking').textContent = stats.rankings_range?.min || 0;
+            } catch (error) {
+                console.error('Error loading statistics:', error);
+            }
+        }
+
+        // Load colleges list
+        async function loadColleges() {
+            try {
+                const response = await fetch('/colleges');
+                const colleges = await response.json();
+                
+                const collegesList = document.getElementById('colleges-list');
+                collegesList.innerHTML = '';
+                
+                colleges.forEach(college => {
+                    const collegeItem = document.createElement('div');
+                    collegeItem.className = 'college-item';
+                    collegeItem.innerHTML = `
+                        <div class="college-name">${college.name}</div>
+                        <div class="college-details">
+                            ${college.location} | Ranking: #${college.ranking} | Acceptance Rate: ${college.acceptance_rate}%
+                        </div>
+                    `;
+                    collegesList.appendChild(collegeItem);
+                });
+            } catch (error) {
+                console.error('Error loading colleges:', error);
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('college-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const collegeData = {};
+            
+            // Convert form data to object
+            for (let [key, value] of formData.entries()) {
+                if (value) {
+                    if (key.includes('_tuition') || key.includes('_population') || key.includes('_score') || 
+                        key.includes('gpa') || key.includes('ranking') || key.includes('founded') || 
+                        key.includes('acceptance_rate') || key.includes('room_board') || 
+                        key.includes('international_students') || key.includes('student_faculty_ratio')) {
+                        collegeData[key] = parseFloat(value);
+                    } else if (key.includes('programs') || key.includes('features')) {
+                        collegeData[key] = value.split('\n').filter(line => line.trim());
+                    } else {
+                        collegeData[key] = value;
+                    }
+                }
+            }
+            
+            // Structure the data properly
+            const structuredData = {
+                name: collegeData.name,
+                location: collegeData.location,
+                type: collegeData.type,
+                founded: collegeData.founded,
+                ranking: collegeData.ranking,
+                acceptance_rate: collegeData.acceptance_rate,
+                tuition: {
+                    undergraduate: collegeData.undergraduate_tuition || 0,
+                    graduate: collegeData.graduate_tuition || 0,
+                    room_board: collegeData.room_board || 0
+                },
+                programs: {
+                    undergraduate: collegeData.undergraduate_programs || [],
+                    graduate: collegeData.graduate_programs || []
+                },
+                admission_requirements: {
+                    gpa: collegeData.gpa || 0,
+                    sat_score: collegeData.sat_score || 0,
+                    act_score: collegeData.act_score || 0,
+                    toefl: 80,
+                    ielts: 6.5,
+                    essays: 2,
+                    recommendations: 2,
+                    deadline: collegeData.deadline || "January 1"
+                },
+                campus_life: {
+                    student_population: collegeData.student_population || 0,
+                    undergraduate: collegeData.undergraduate_population || 0,
+                    graduate: (collegeData.student_population || 0) - (collegeData.undergraduate_population || 0),
+                    international_students: collegeData.international_students || 0,
+                    student_faculty_ratio: collegeData.student_faculty_ratio || 0,
+                    housing: "Available"
+                },
+                notable_features: collegeData.notable_features || [],
+                website: collegeData.website || "",
+                contact: {
+                    phone: collegeData.contact_phone || "",
+                    email: collegeData.contact_email || ""
+                }
+            };
+            
+            try {
+                const response = await fetch('/admin/add-college', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(structuredData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showMessage('College added successfully!', 'success');
+                    clearForm();
+                    loadStatistics();
+                    loadColleges();
+                } else {
+                    showMessage('Error: ' + result.error, 'error');
+                }
+            } catch (error) {
+                showMessage('Error adding college: ' + error.message, 'error');
+            }
+        });
+
+        // Clear form
+        function clearForm() {
+            document.getElementById('college-form').reset();
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = type;
+            messageDiv.textContent = message;
+            
+            const container = document.querySelector('.container');
+            container.insertBefore(messageDiv, container.firstChild);
+            
+            setTimeout(() => {
+                messageDiv.remove();
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
